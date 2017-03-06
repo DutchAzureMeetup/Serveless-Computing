@@ -7,8 +7,8 @@
     <ProjectGuid>{9600674B-8E60-4597-A7B7-9A878BECA6E3}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TempSensor</RootNamespace>
-    <AssemblyName>TempSensor</AssemblyName>
+    <RootNamespace>ForceSensor</RootNamespace>
+    <AssemblyName>ForceSensor</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
     <TargetPlatformVersion>10.0.10586.0</TargetPlatformVersion>
