@@ -28,6 +28,7 @@ namespace WebUI.Controllers
                         RoomId = r.RoomId,
                         RoomName = r.RoomName
                     })
+                    .OrderBy(r => r.RoomName)
                     .ToList()
             };
 

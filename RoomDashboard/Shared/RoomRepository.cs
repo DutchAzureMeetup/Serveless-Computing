@@ -18,7 +18,7 @@ namespace Shared
             var storageAccount = CloudStorageAccount.Parse(connectionString);
 
             _tableClient = storageAccount.CreateCloudTableClient();
-            _table = _tableClient.GetTableReference("seats");
+            _table = _tableClient.GetTableReference("rooms");
             _table.CreateIfNotExists();
         }
 

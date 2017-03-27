@@ -17,6 +17,7 @@ namespace EventGenerator
 
             _queueClient = storageAccount.CreateCloudQueueClient();
             _queue = _queueClient.GetQueueReference(queueName);
+            _queue.CreateIfNotExists();
         }
 
         public Task PublishEventsAsync(Guid roomId, int seatNumber, bool isTaken)
