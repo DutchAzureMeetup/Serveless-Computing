@@ -136,7 +136,7 @@ You’ve created a function that receives seat availability events on a storage 
 ## Exercise 3: Registering the room and receiving events
 In this exercise you’ll register your personal room in a Room Dashboard. Once registered, you’ll automatically start receiving seat availability events in your storage queue. Then you will use the cross-platform Microsoft Azure Storage Explorer to view the stored seat availability data in the storage table.
 
-1. Open a browser window and navigate to [bit.ly/2o8cGGe](bit.ly/2o8cGGe).
+1. Open a browser window and navigate to [bit.ly/2o8cGGe](http://bit.ly/2o8cGGe).
 
     ![](Images/65E8BBAF-71F2-4AF6-896F-16CCA6F3859F.png)
 	
@@ -226,6 +226,6 @@ In this exercise, you will add a second function to the Function App you created
 
     ![](Images/91696D25-CE14-4138-A7B9-59051645F898.png)
 
-You’ve created a function that updates the Room Dashboard every 10 seconds with the seating availability of your room. Have a look at [bit.ly/2o8cGGe](bit.ly/2o8cGGe)!
+You’ve created a function that updates the Room Dashboard every 10 seconds with the seating availability of your room. Have a look at [bit.ly/2o8cGGe](http://bit.ly/2o8cGGe)!
 
 ![](Images/36A40893-49E3-449C-9C42-53EA3A553856.png)
