@@ -70,6 +70,9 @@ Once you have created an Azure Function App, you can add Azure Functions to it. 
 7. Click **Develop** to return to the code editor. Replace the code shown in the code editor with the following statements:
 
     ```
+    // You can add NuGet packages to the function by adding dependencies
+    // in the project.json file. Some often-used assemblies are special
+    // cased however, and may be referenced by simplename syntax:
     #r "Microsoft.WindowsAzure.Storage" 
     #r "Newtonsoft.Json"
 
@@ -77,12 +80,19 @@ Once you have created an Azure Function App, you can add Azure Functions to it. 
     using Microsoft.WindowsAzure.Storage.Table;
     using Newtonsoft.Json;
 
+    // This is the main method of the function.
+    // seatEventText is bound to the storage queue trigger and will contain the message body.
+    // seatsTable is bound to the output storage table.
     public static void Run(string seatEventText, CloudTable seatsTable, TraceWriter log)
     {
+        // Deserialize the message body into an actual object.
         var seatEvent = JsonConvert.DeserializeObject<SeatEvent>(seatEventText);
 
         log.Info($"Status of seat {seatEvent.SeatNumber} in room {seatEvent.RoomId} changed (IsTaken = {seatEvent.IsTaken}).");
 
+	// To store data in a storage table, we need to create a table entity.
+	// Entities provide a PartitionKey to determine in what table partition to save the entity
+	// as well as a RowKey to make the entity unique within the partition.
         SeatEntity entity = new SeatEntity
         {
             PartitionKey = seatEvent.RoomId.ToString(),
@@ -90,6 +100,8 @@ Once you have created an Azure Function App, you can add Azure Functions to it. 
             IsTaken = seatEvent.IsTaken
         };
 
+	// We use InsertOrReplace here because the table will be empty initially, but
+	// there will be multiple events coming in for the same seat.
         TableOperation operation = TableOperation.InsertOrReplace(entity);
         seatsTable.Execute(operation);
     }
