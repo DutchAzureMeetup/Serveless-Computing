@@ -90,9 +90,9 @@ Once you have created an Azure Function App, you can add Azure Functions to it. 
 
         log.Info($"Status of seat {seatEvent.SeatNumber} in room {seatEvent.RoomId} changed (IsTaken = {seatEvent.IsTaken}).");
 
-	// To store data in a storage table, we need to create a table entity.
-	// Entities provide a PartitionKey to determine in what table partition to save the entity
-	// as well as a RowKey to make the entity unique within the partition.
+        // To store data in a storage table, we need to create a table entity.
+        // Entities provide a PartitionKey to determine in what table partition to save the entity
+        // as well as a RowKey to make the entity unique within the partition.
         SeatEntity entity = new SeatEntity
         {
             PartitionKey = seatEvent.RoomId.ToString(),
@@ -100,8 +100,8 @@ Once you have created an Azure Function App, you can add Azure Functions to it. 
             IsTaken = seatEvent.IsTaken
         };
 
-	// We use InsertOrReplace here because the table will be empty initially, but
-	// there will be multiple events coming in for the same seat.
+        // We use InsertOrReplace here because the table will be empty initially, but
+        // there will be multiple events coming in for the same seat.
         TableOperation operation = TableOperation.InsertOrReplace(entity);
         seatsTable.Execute(operation);
     }
