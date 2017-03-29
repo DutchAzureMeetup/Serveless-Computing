@@ -194,6 +194,9 @@ In this exercise, you will add a second function to the Function App you created
 6. Click **Develop** to return to the code editor. Replace the code shown in the code editor with the following statements:
 
     ```
+    // You can add NuGet packages to the function by adding dependencies
+    // in the project.json file. Some often-used assemblies are special
+    // cased however, and may be referenced by simplename syntax:
     #r "Microsoft.WindowsAzure.Storage" 
 
     using System;
@@ -201,27 +204,36 @@ In this exercise, you will add a second function to the Function App you created
     using System.Net.Http;
     using Microsoft.WindowsAzure.Storage.Table;
 
+    // This is the main method of the function.
+    // myTimer is bound to the timer trigger and will contain information on the timer.
+    // seatsTable is bound to the input storage table.
     public static async Task Run(TimerInfo myTimer, IQueryable<Seat> seatsTable, TraceWriter log)
     {
+        // This is the configuration of the rooms for which this function should report
+        // seat availability.
         Dictionary<string, int> roomConfigs = new Dictionary<string, int>
         {
             { "<ROOM-ID>", 100 }
         };
 
+        // Create an HttpClient to call the dashboard's API.
         HttpClient client = new HttpClient();
         client.BaseAddress = new Uri("http://webui20170327091447.azurewebsites.net/api/");
         
         foreach (var roomConfig in roomConfigs)
         {
+            // Get the number of occupied seats from table storage.
             var takenSeatCount = seatsTable
                 .Where(s => s.PartitionKey == roomConfig.Key)
                 .ToList() // Executes table query.
                 .Count(s => s.IsTaken);
 
+            // Subtract those from the total number of seats to get the available number of seats.
             var availableSeatCount = roomConfig.Value - takenSeatCount;
 
             log.Info($"Reporting {availableSeatCount} available seat(s) for room {roomConfig.Key}.");
 
+            // Push the results to the dashboard API.
             await client.PutAsync(
                 $"room/{roomConfig.Key}",
                 new StringContent(availableSeatCount.ToString(), Encoding.ASCII, "application/json"));
