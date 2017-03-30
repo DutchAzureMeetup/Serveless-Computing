@@ -1,7 +1,9 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using Microsoft.WindowsAzure.Storage;
 using Shared;
 using WebUI.Models;
 
@@ -47,16 +49,42 @@ namespace WebUI.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _roomRepository.AddRoomAsync(
-                    model.RoomName,
-                    model.StorageQueueConnectionString,
-                    model.StorageQueueName);
+                if (!(await CanConnectAsync(model.StorageQueueConnectionString, model.StorageQueueName)))
+                {
+                    ModelState.AddModelError("StorageQueueConnectionString", "Invalid storage queue connection string.");
+                }
+                else
+                {
+                    await _roomRepository.AddRoomAsync(
+                        model.RoomName,
+                        model.StorageQueueConnectionString,
+                        model.StorageQueueName);
 
-                return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Home");
+                }
             }
 
             // If we got this far, something failed, redisplay form
             return View(model);
+        }
+
+        private async Task<bool> CanConnectAsync(string connectionString, string queueName)
+        {
+            try
+            {
+                var storageAccount = CloudStorageAccount.Parse(connectionString);
+
+                var queueClient = storageAccount.CreateCloudQueueClient();
+                var queue = queueClient.GetQueueReference(queueName);
+
+                await queue.CreateIfNotExistsAsync();
+
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
