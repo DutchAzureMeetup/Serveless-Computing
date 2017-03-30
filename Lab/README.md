@@ -70,6 +70,9 @@ Once you have created an Azure Function App, you can add Azure Functions to it. 
 7. Click **Develop** to return to the code editor. Replace the code shown in the code editor with the following statements:
 
     ```
+    // You can add NuGet packages to the function by adding dependencies
+    // in the project.json file. Some often-used assemblies are special
+    // cased however, and may be referenced by simplename syntax:
     #r "Microsoft.WindowsAzure.Storage" 
     #r "Newtonsoft.Json"
 
@@ -77,12 +80,19 @@ Once you have created an Azure Function App, you can add Azure Functions to it. 
     using Microsoft.WindowsAzure.Storage.Table;
     using Newtonsoft.Json;
 
+    // This is the main method of the function.
+    // seatEventText is bound to the storage queue trigger and will contain the message body.
+    // seatsTable is bound to the output storage table.
     public static void Run(string seatEventText, CloudTable seatsTable, TraceWriter log)
     {
+        // Deserialize the message body into an actual object.
         var seatEvent = JsonConvert.DeserializeObject<SeatEvent>(seatEventText);
 
         log.Info($"Status of seat {seatEvent.SeatNumber} in room {seatEvent.RoomId} changed (IsTaken = {seatEvent.IsTaken}).");
 
+        // To store data in a storage table, we need to create a table entity.
+        // Entities provide a PartitionKey to determine in what table partition to save the entity
+        // as well as a RowKey to make the entity unique within the partition.
         SeatEntity entity = new SeatEntity
         {
             PartitionKey = seatEvent.RoomId.ToString(),
@@ -90,6 +100,8 @@ Once you have created an Azure Function App, you can add Azure Functions to it. 
             IsTaken = seatEvent.IsTaken
         };
 
+        // We use InsertOrReplace here because the table will be empty initially, but
+        // there will be multiple events coming in for the same seat.
         TableOperation operation = TableOperation.InsertOrReplace(entity);
         seatsTable.Execute(operation);
     }
@@ -136,7 +148,7 @@ You’ve created a function that receives seat availability events on a storage 
 ## Exercise 3: Registering the room and receiving events
 In this exercise you’ll register your personal room in a Room Dashboard. Once registered, you’ll automatically start receiving seat availability events in your storage queue. Then you will use the cross-platform Microsoft Azure Storage Explorer to view the stored seat availability data in the storage table.
 
-1. Open a browser window and navigate to [bit.ly/2o8cGGe](bit.ly/2o8cGGe).
+1. Open a browser window and navigate to [bit.ly/2o8cGGe](http://bit.ly/2o8cGGe).
 
     ![](Images/65E8BBAF-71F2-4AF6-896F-16CCA6F3859F.png)
 	
@@ -182,6 +194,9 @@ In this exercise, you will add a second function to the Function App you created
 6. Click **Develop** to return to the code editor. Replace the code shown in the code editor with the following statements:
 
     ```
+    // You can add NuGet packages to the function by adding dependencies
+    // in the project.json file. Some often-used assemblies are special
+    // cased however, and may be referenced by simplename syntax:
     #r "Microsoft.WindowsAzure.Storage" 
 
     using System;
@@ -189,27 +204,36 @@ In this exercise, you will add a second function to the Function App you created
     using System.Net.Http;
     using Microsoft.WindowsAzure.Storage.Table;
 
+    // This is the main method of the function.
+    // myTimer is bound to the timer trigger and will contain information on the timer.
+    // seatsTable is bound to the input storage table.
     public static async Task Run(TimerInfo myTimer, IQueryable<Seat> seatsTable, TraceWriter log)
     {
+        // This is the configuration of the rooms for which this function should report
+        // seat availability.
         Dictionary<string, int> roomConfigs = new Dictionary<string, int>
         {
             { "<ROOM-ID>", 100 }
         };
 
+        // Create an HttpClient to call the dashboard's API.
         HttpClient client = new HttpClient();
         client.BaseAddress = new Uri("http://webui20170327091447.azurewebsites.net/api/");
         
         foreach (var roomConfig in roomConfigs)
         {
+            // Get the number of occupied seats from table storage.
             var takenSeatCount = seatsTable
                 .Where(s => s.PartitionKey == roomConfig.Key)
                 .ToList() // Executes table query.
                 .Count(s => s.IsTaken);
 
+            // Subtract those from the total number of seats to get the available number of seats.
             var availableSeatCount = roomConfig.Value - takenSeatCount;
 
             log.Info($"Reporting {availableSeatCount} available seat(s) for room {roomConfig.Key}.");
 
+            // Push the results to the dashboard API.
             await client.PutAsync(
                 $"room/{roomConfig.Key}",
                 new StringContent(availableSeatCount.ToString(), Encoding.ASCII, "application/json"));
@@ -226,6 +250,6 @@ In this exercise, you will add a second function to the Function App you created
 
     ![](Images/91696D25-CE14-4138-A7B9-59051645F898.png)
 
-You’ve created a function that updates the Room Dashboard every 10 seconds with the seating availability of your room. Have a look at [bit.ly/2o8cGGe](bit.ly/2o8cGGe)!
+You’ve created a function that updates the Room Dashboard every 10 seconds with the seating availability of your room. Have a look at [bit.ly/2o8cGGe](http://bit.ly/2o8cGGe)!
 
 ![](Images/36A40893-49E3-449C-9C42-53EA3A553856.png)
